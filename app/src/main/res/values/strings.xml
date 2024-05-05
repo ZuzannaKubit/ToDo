@@ -7,7 +7,20 @@
     <string name="sort_tasks">Sort Tasks</string>
     <string name="vertical_menu">Vertical Menu</string>
     <string name="close_icon">Close</string>
+    <string name="back_arrow_icon">Arrow Back Icon</string>
+    <string name="delete_icon">Delete</string>
+    <string name="update_icon">Update</string>
+    <string name="arrow_drop_down">Drop Down</string>
 
     //descriptions:
     <string name="delete_all_action">Delete All</string>
+    <string name="empty_notes_list">List of notes is empty</string>
+    <string name="add_task">Add Task</string>
+    <string name="description">Note</string>
+    <string name="title">Title</string>
+    //alert dialog:
+    <string name="delete_task">Remove \'%1$s\ '?</string>
+    <string name="delete_tasks_confirmation">Are You sure you want to remove \'%1$s\?'</string>
+    <string name="delete_all_tasks">Remove All Tasks?</string>
+    <string name="delete_all_tasks_confirmation">Are You sure You want to remove all tasks? There is no going back after this action</string>
 </resources>
