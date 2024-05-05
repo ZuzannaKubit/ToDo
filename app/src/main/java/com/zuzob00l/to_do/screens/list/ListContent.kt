@@ -21,25 +21,65 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import com.zuzob00l.to_do.data.models.Priority
 import com.zuzob00l.to_do.data.models.ToDoTask
 import com.zuzob00l.to_do.ui.theme.ListItemColor
 import com.zuzob00l.to_do.ui.theme.ListItemTextColor
 import com.zuzob00l.to_do.ui.theme.PRIORITY_INDICATOR_SIZE
+import com.zuzob00l.to_do.util.RequestState
+import com.zuzob00l.to_do.util.SearchAppBarState
+
 @ExperimentalMaterialApi
 @Composable
 fun ListContent(
     modifier: Modifier,
+    allTasks: RequestState<List<ToDoTask>>,
+    searchAppBarState: SearchAppBarState,
+    searchedTasks: RequestState<List<ToDoTask>>,
+    navigateToTaskScreen: (taskId: Int) -> Unit)
+{
+   if(searchAppBarState == SearchAppBarState.TRIGGERED)
+   {
+       if(searchedTasks is RequestState.Success)
+           HandleListContent(
+               tasks = searchedTasks.data,
+               navigateToTaskScreen = navigateToTaskScreen)
+   }
+    else
+    {
+       if (allTasks is RequestState.Success)
+           HandleListContent(
+               tasks = allTasks.data,
+               navigateToTaskScreen = navigateToTaskScreen)
+    }
+}
+@ExperimentalMaterialApi
+@Composable
+fun HandleListContent(
     tasks: List<ToDoTask>,
     navigateToTaskScreen: (taskId: Int) -> Unit)
+{
+    if(tasks.isEmpty())
+        EmptyContent()
+    else
+        DisplayTasks(
+            tasks = tasks,
+            navigateToTaskScreen = navigateToTaskScreen)
+}
+
+@ExperimentalMaterialApi
+@Composable
+fun DisplayTasks(
+    tasks: List<ToDoTask>,
+    navigateToTaskScreen: (taskId: Int) -> Unit
+)
 {
     LazyColumn(modifier = Modifier.padding(horizontal = 16.dp, vertical = 20.dp)) {
         items(
             items = tasks,
             key = { task -> task.id })
         {
-            task -> TaskItem(
+                task -> TaskItem(
             toDoTask = task,
             navigateToTaskScreen = navigateToTaskScreen)
         }
@@ -73,7 +113,7 @@ fun TaskItem(
                     text = toDoTask.title,
                     color = MaterialTheme.colors.ListItemTextColor,
                     style = MaterialTheme.typography.h5,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Normal,
                     maxLines = 1)
 
                 Box(

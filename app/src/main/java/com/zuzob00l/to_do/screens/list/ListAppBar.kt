@@ -10,12 +10,10 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldColors
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -35,13 +33,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zuzob00l.to_do.R
+import com.zuzob00l.to_do.components.DisplayAlertDialog
 import com.zuzob00l.to_do.components.PriorityItem
 import com.zuzob00l.to_do.data.models.Priority
 import com.zuzob00l.to_do.ui.theme.BackgroundColor
 import com.zuzob00l.to_do.ui.theme.LARGE_PADDING
-import com.zuzob00l.to_do.ui.theme.Typography
 import com.zuzob00l.to_do.ui.theme.topAppBarBackground
 import com.zuzob00l.to_do.ui.theme.topAppBarColor
+import com.zuzob00l.to_do.util.Actions
 import com.zuzob00l.to_do.util.SearchAppBarState
 import com.zuzob00l.to_do.util.TrailingIconState
 import com.zuzob00l.to_do.viewModels.SharedViewModel
@@ -56,14 +55,14 @@ fun ListAppBar(
     {
         SearchAppBarState.CLOSED -> { DefaultListAppBar(
             onSearchClicked = { sharedViewModel.searchAppBarState.value = SearchAppBarState.OPEN },
-            onSortClicked = {},
-            onDeleteClicked = {}) }
+            onSortClicked = { sharedViewModel.persistSortState(it) },
+            onDeleteAllConfirmed = { sharedViewModel.action.value = Actions.DELETE_ALL }) }
           else -> {
               SearchAppBar(
             text = searchTextState,
             onTextChange = { newText ->
                 sharedViewModel.searchTextState.value = newText },
-            onSearchClicked = {},
+            onSearchClicked = { sharedViewModel.searchDatabase(searchQuery = it) },
             onCloseClicked = {
                 sharedViewModel.searchAppBarState.value = SearchAppBarState.CLOSED
                 sharedViewModel.searchTextState.value = ""}) }
@@ -75,22 +74,31 @@ fun ListAppBar(
 fun DefaultListAppBar(
     onSearchClicked: () -> Unit,
     onSortClicked: (Priority) -> Unit,
-    onDeleteClicked: () -> Unit)
+    onDeleteAllConfirmed: () -> Unit)
 {
    TopAppBar(
        title = { Text(text = "Tasks", color = MaterialTheme.colors.topAppBarColor) },
-       actions = { ListAppBarActions( onSearchClicked = onSearchClicked, onSortClicked, onDeleteClicked) },
+       actions = { ListAppBarActions( onSearchClicked = onSearchClicked, onSortClicked, onDeleteAllConfirmed) },
        backgroundColor = MaterialTheme.colors.topAppBarBackground)
 }
 @Composable
 fun ListAppBarActions(
     onSearchClicked: () -> Unit,
     onSortClicked: (Priority) -> Unit,
-    onDeleteClicked: () -> Unit)
+    onDeleteAllConfirmed: () -> Unit)
 {
+    var openDialog by remember { mutableStateOf(false) }
+
+    DisplayAlertDialog(
+        title = stringResource(R.string.delete_all_tasks),
+        message = stringResource(R.string.delete_tasks_confirmation),
+        openDialog = openDialog,
+        closeDialog = { openDialog = false },
+        onYesClicked = { onDeleteAllConfirmed() })
+
     SearchAction(onSearchClicked = onSearchClicked)
     SortAction(onSortClicked = onSortClicked)
-    DeleteAll(onDeleteClicked = onDeleteClicked)
+    DeleteAll(onDeleteAllConfirmed = { openDialog = true })
 }
 
 @Composable
@@ -130,23 +138,23 @@ fun SortAction(onSortClicked: (Priority) -> Unit)
    //MEDIUM//////////////////////////////////////////////////////////////////////
            DropdownMenuItem(onClick = {
                expanded = false
-               onSortClicked(Priority.MEDIUM)})
+               onSortClicked(Priority.HIGH)})
            {
-               PriorityItem(Priority.MEDIUM)
+               PriorityItem(Priority.HIGH)
            }
    //HIGH////////////////////////////////////////////////////////////////////////
            DropdownMenuItem(onClick = {
                expanded = false
-               onSortClicked(Priority.HIGH)})
+               onSortClicked(Priority.NONE)})
            {
-               PriorityItem(Priority.HIGH)
+               PriorityItem(Priority.NONE)
            }
        }
    }
 }
 
 @Composable
-fun DeleteAll(onDeleteClicked: () -> Unit)
+fun DeleteAll(onDeleteAllConfirmed: () -> Unit)
 {
     var expanded by remember { mutableStateOf(false) }
 
@@ -163,7 +171,7 @@ fun DeleteAll(onDeleteClicked: () -> Unit)
         {
             DropdownMenuItem(onClick = {
                 expanded = false
-                onDeleteClicked() })
+                onDeleteAllConfirmed() })
             {
               Text(
                   modifier = Modifier.padding(start = LARGE_PADDING),
@@ -249,7 +257,7 @@ fun DefaultListAppBarPreview()
     DefaultListAppBar(
         onSearchClicked = {},
         onSortClicked = {},
-        onDeleteClicked = {})
+        onDeleteAllConfirmed = {})
 }
 @Composable
 @Preview(showBackground = true)
